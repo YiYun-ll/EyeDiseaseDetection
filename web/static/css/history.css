@@ -1,0 +1,173 @@
+:root {
+    --medical-blue: #2A5C82;
+    --professional-green: #4CAF50;
+    --alert-yellow: #FFC107;
+    --critical-red: #E53935;
+    --hover-blue: #1E4565;
+}
+
+body {
+    font-family: 'Segoe UI', 'Roboto', sans-serif;
+    background: #f8fafb;
+}
+
+/* 标题区域 */
+.header {
+    margin-bottom: 30px;
+    padding: 25px 30px;
+    background: linear-gradient(135deg, var(--medical-blue) 0%, #357ba6 100%);
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(42,92,130,0.15);
+}
+
+.header h1 {
+    color: white;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+}
+
+/* 卡片容器样式 */
+.chart-container, .table-container {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.06);
+    border: none;
+    transition: transform 0.3s ease;
+}
+
+.chart-container:hover, .table-container:hover {
+    transform: translateY(-2px);
+}
+
+/* 表格优化 */
+.table-container {
+    height: 560px;
+    display: flex;          
+    flex-direction: column; 
+    overflow: hidden;       
+}
+
+.table-container table {
+    --bs-table-striped-bg: #f8fafb;
+    font-size: 0.92rem;
+}
+
+.table-scroll-wrapper {
+    flex: 1;
+    overflow-y: auto;
+    position: relative;
+    margin-top: -1px;
+}
+
+.table-container thead {
+    position: sticky;
+    top: 0;
+    z-index: 2;
+    background: white;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.table th {
+    background: var(--medical-blue) !important;
+    color: white !important;
+    font-weight: 500;
+    padding: 1rem 1.25rem;
+}
+
+.table td {
+    padding: 0.85rem 1.25rem;
+    vertical-align: middle;
+}
+
+.table-hover tbody tr:hover {
+    background-color: #f3f9ff !important;
+}
+
+/* 按钮样式 */
+.btn-medical {
+    padding: 0.6rem 1.25rem;
+    border-radius: 8px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    border: none;
+}
+
+.btn-primary {
+    background: var(--medical-blue);
+    border: 1px solid var(--medical-blue);
+}
+
+.btn-primary:hover {
+    background: var(--hover-blue);
+    transform: translateY(-1px);
+}
+
+.btn-success {
+    background: var(--professional-green);
+    border: 1px solid var(--professional-green);
+}
+
+/* 搜索框 */
+.input-group {
+    box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+    border-radius: 8px;
+}
+
+.input-group-text {
+    background: white;
+    border: none;
+    color: #6c757d;
+}
+
+#searchInput {
+    border: none;
+    padding: 0.75rem;
+}
+
+/* 徽章样式 */
+.badge.bg-mild { background-color: #ffd56a; color: #000; }
+.badge.bg-caution { background-color: #ff9a3e; color: #000; }
+.badge.bg-danger { background-color: #dc3545; }
+.badge.bg-normal { background-color: #28a745; }
+
+/* 模态框 */
+.modal-header {
+    background: var(--medical-blue);
+    border-radius: 12px 12px 0 0;
+}
+
+.modal-icon {
+    background: rgba(255,255,255,0.15);
+    border-radius: 10px;
+    width: 45px;
+    height: 45px;
+}
+
+/* 图表 */
+#chart {
+    border: 1px solid #e0e7ed;
+}
+
+/* 排序指示器 */
+.sort-arrow::after {
+    font-size: 0.8em;
+    margin-left: 5px;
+}
+.sort-arrow {
+    display: inline-block;
+    width: 12px;
+    height: 12px;
+    margin-left: 5px;
+    background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path fill="currentColor" d="M12 5.83L15.17 9l1.41-1.41L12 3 7.41 7.59 8.83 9 12 5.83zm0 12.34L8.83 15l-1.41 1.41L12 21l4.59-4.59L15.17 15 12 18.17z"/></svg>') no-repeat center;
+    opacity: 0.5;
+    transition: transform 0.3s;
+}
+
+.sort-arrow.asc {
+    transform: rotate(180deg);
+    opacity: 1;
+}
+
+.sort-arrow.desc {
+    opacity: 1;
+}

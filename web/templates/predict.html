@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>智能眼疾检测系统</title>
+        <link href="https://cdn.bootcdn.net/ajax/libs/bootstrap/5.1.3/css/bootstrap.min.css" rel="stylesheet">
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+        <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+        <link rel="stylesheet" href="{{ url_for('static', filename='css/predict.css') }}">
+    </head>
+    <body>
+        <div class="main-container">
+            <!-- 上传卡片 -->
+            <div class="upload-card">
+                <h2 class="text-center mb-4 gradient-title"><i class="fas fa-eye me-2"></i>智能眼疾检测系统</h2>
+                <form id="upload-form" enctype="multipart/form-data">
+                    <div class="d-flex gap-3 justify-content-center">
+                        <a href="{{ url_for('batch') }}" class="custom-file-upload btn-lg">
+                            <i class="fas fa-folder-tree me-2"></i>批量检测
+                        </a>
+                        <a href="{{ url_for('history') }}" class="custom-file-upload btn-lg">
+                            <i class="fas fa-history me-2"></i>历史检测记录
+                        </a>
+                        <label class="custom-file-upload btn-lg">
+                            <i class="fas fa-upload me-2"></i>选择眼底照片
+                            <input type="file" id="image-input" name="image" accept="image/*" hidden>
+                        </label>
+                        <button class="btn btn-lg btn-primary px-4 py-2" type="submit" id="submit-btn" 
+                                style="background: linear-gradient(45deg, #3a0ca3, #4cc9f0); border: none;">
+                            <i class="fas fa-search me-2"></i>开始检测
+                        </button>
+                    </div>
+                </form>
+            </div>
+    
+            <!-- 结果展示区 -->
+            <div class="row g-4">
+                <div class="col-lg-6">
+                    <div class="preview-section position-relative">
+                        <div class="chart-header">
+                            <h4 class="mb-0 text-dark"><i class="fas fa-image me-2"></i>影像预览</h4>
+                        </div>
+                        <div class="d-flex justify-content-center align-items-center h-90">
+                            <img id="preview-image" src="static/img/3.png" alt="预览图片">
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-lg-6">
+                    <div class="chart-container">
+                        <div class="chart-wrapper">
+                            <h4 class="mb-0 text-dark"><i class="fas fa-chart-bar me-2"></i>检测结果分析</h4>
+                        </div>
+                        <!-- 将按钮移出chart-wrapper -->
+                        <button id="analyze-btn" class="btn btn-sm btn-primary" 
+                                style="position: absolute; 
+                                       top: 20px; 
+                                       right: 30px; 
+                                       z-index: 10;
+                                       background: linear-gradient(45deg, #3a0ca3, #4cc9f0); 
+                                       border: none;">
+                            <i class="fas fa-comment-medical me-2"></i>DeepSeek分析
+                        </button>
+                        
+                        <canvas id="resultChart"></canvas>
+                        <!-- 新增分析结果显示区域 -->
+                        <div class="analysis-section mt-3 p-3 rounded-3" 
+                             style="background: rgba(255,255,255,0.9); display:none;">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <h6 class="mb-0"><i class="fas fa-robot me-2"></i>AI分析报告</h6>
+                                <small class="text-muted">基于DeepSeek-R1大模型</small>
+                            </div>
+                            <div id="cot-output" class="cot-content analysis-content" style="min-height: 120px; max-height: 185px; overflow-y: auto;"></div>
+                            <div id="analysis-output" class="response-content analysis-content" style="min-height: 120px; max-height: 185px; overflow-y: auto;"></div>
+                            <div class="text-end mt-2">
+                                <button id="copy-btn" class="btn btn-sm btn-outline-secondary" 
+                                        style="display: none;">
+                                    <i class="fas fa-copy me-1"></i>复制报告
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    
+        <!-- 加载动画 -->
+        <div id="loading" class="text-center position-fixed top-50 start-50 translate-middle">
+            <div class="loading-circle mx-auto mb-4"></div>
+            <h5 class="mb-2 text-dark">AI分析进行中</h5>
+            <p class="text-muted mb-0">深度神经网络处理中...</p>
+            <small class="text-muted">首次检测可能耗时 1-2s</small>
+        </div>
+        
+        <div class="modal fade" id="patientModal" tabindex="-1">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header bg-primary text-white">
+                        <h5 class="modal-title"><i class="fas fa-user-circle me-2"></i>补充患者信息（可选）</h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                    </div>
+                    <form id="patientForm">
+                        <div class="modal-body">
+                            <div class="row g-3">
+                                <!-- 年龄 -->
+                                <div class="col-md-6">
+                                    <label class="form-label">年龄</label>
+                                    <input type="number" 
+                                        class="form-control" 
+                                        name="age" 
+                                        min="0" 
+                                        max="120"
+                                        placeholder="请输入年龄（可选）">
+                                </div>
+                                
+                                <!-- 性别 -->
+                                <div class="col-md-6">
+                                    <label class="form-label">性别</label>
+                                    <input type="text"
+                                        class="form-control"
+                                        name="gender"
+                                        placeholder="男/女（可选）"
+                                        maxlength="10">
+                                </div>
+    
+                                <!-- 职业 -->
+                                <div class="col-12">
+                                    <label class="form-label">职业</label>
+                                    <input type="text" 
+                                        class="form-control"
+                                        name="occupation"
+                                        placeholder="请输入职业（可选）"
+                                        maxlength="50">
+                                </div>
+    
+                                <!-- 疾病史 -->
+                                <div class="col-12">
+                                    <label class="form-label">疾病史</label>
+                                    <textarea class="form-control" 
+                                            name="medicalHistory" 
+                                            rows="2"
+                                            placeholder="如：糖尿病、高血压等（可选）"></textarea>
+                                </div>
+    
+                                <!-- 其他补充 -->
+                                <div class="col-12">
+                                    <label class="form-label">其他补充</label>
+                                    <textarea class="form-control" 
+                                            name="additionalInfo" 
+                                            rows="2"
+                                            placeholder="如：症状持续时间、用药情况等（可选）"></textarea>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="submit" class="btn btn-primary">提交信息</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        <div class="modal fade" id="detailModal">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <!-- 动态内容由JS填充 -->
+                </div>
+            </div>
+        </div>
+        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
+        <script src="https://cdn.bootcdn.net/ajax/libs/bootstrap/5.1.3/js/bootstrap.bundle.min.js"></script>
+        <script src="{{ url_for('static', filename='js/disease-info.js') }}"></script>
+        <script src="{{ url_for('static', filename='js/predict.js') }}"></script>
+    </body>
+</html>
