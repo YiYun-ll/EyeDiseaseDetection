@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>批量眼疾检测</title>
+    <link href="https://cdn.bootcdn.net/ajax/libs/bootstrap/5.1.3/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/batch.css') }}">
+    <script src="https://cdn.sheetjs.com/xlsx-0.20.0/package/dist/xlsx.full.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.bootcdn.net/ajax/libs/bootstrap/5.1.3/js/bootstrap.bundle.min.js"></script>
+</head>
+<body>
+    <div class="main-container">
+        <div class="loading-overlay" id="loadingOverlay">
+            <div class="loading-content">
+                <div class="spinner"></div>
+                <h5 class="mb-3 fw-bold text-dark">正在检测中...</h5>
+                <div class="progress-text text-secondary">
+                    已处理 <span id="processedCount" class="fw-bold text-dark">0</span> / 
+                    <span id="totalCount" class="fw-bold text-dark">0</span> 个文件
+                </div>
+                <div class="time-estimate text-muted mt-1">
+                    预计剩余时间：<span id="estimatedTime" class="fw-bold">0</span>秒
+                </div>
+            </div>
+        </div>
+
+        <div class="upload-card">
+            <h2 class="gradient-title">
+                <a href="{{ url_for('system') }}" class="btn btn-lg btn-light me-3 shadow-sm">
+                    <i class="fas fa-eye"></i>
+                </a>
+                <a href="{{ url_for('history') }}" class="btn btn-lg btn-light me-3 shadow-sm">
+                    <i class="fas fa-history"></i>
+                </a>
+                批量眼疾检测分析
+            </h2>
+            
+            <div class="d-flex flex-column flex-lg-row gap-3 justify-content-start mb-4">
+                <label class="custom-file-upload">
+                    <i class="fas fa-folder-open me-2"></i>选择文件夹
+                    <input type="file" id="folderInput" webkitdirectory directory multiple hidden>
+                </label>
+                <label class="custom-file-upload secondary">
+                    <i class="fas fa-images me-2"></i>选择多文件
+                    <input type="file" id="multiFileInput" multiple accept="image/*" hidden>
+                </label>
+            </div>
+
+            <div class="alert alert-light d-flex justify-content-between align-items-center mb-4 p-3 border shadow-sm">
+                <div class="d-flex align-items-center">
+                    <i class="fas fa-file-image me-3 fs-4 text-secondary"></i>
+                    <span class="text-muted">已选择文件：</span>
+                    <span class="file-count-badge ms-2">0</span>
+                </div>
+                <button id="startAnalysis" class="btn btn-lg text-white">
+                    <i class="fas fa-play-circle me-2"></i>开始检测
+                </button>
+            </div>
+
+            <div class="row g-4">
+                <div class="col-lg-7">
+                    <div class="result-table card h-100">
+                        <div class="card-header d-flex justify-content-between align-items-center">
+                            <div>
+                                <i class="fas fa-table me-2"></i>详细检测结果
+                            </div>
+                            <button id="exportExcel" class="btn export-btn btn-sm">
+                                <i class="fas fa-file-excel me-2"></i>导出Excel
+                            </button>
+                        </div>
+                        <div class="card-body p-0">
+                            <div class="table-responsive" style="max-height:500px;">
+                                <table class="table table-hover mb-0">
+                                    <thead>
+                                        <tr>
+                                            <th style="width: 30%">文件名</th>
+                                            <th style="width: 25%">疾病类型</th>
+                                            <th style="width: 20%">概率</th>
+                                            <th style="width: 25%">严重程度</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="resultBody"></tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-lg-5">
+                    <div class="chart-card card">
+                        <div class="card-header">
+                            <i class="fas fa-chart-pie me-2"></i>疾病分布分析
+                        </div>
+                        <div class="card-body p-4">
+                            <canvas id="batchChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- 详细结果模态框 -->
+    <div class="modal fade" id="detailModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered modal-xl"> <!-- 改为更大尺寸 -->
+            <div class="modal-content">
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title">
+                        <i class="fas fa-info-circle me-2"></i>详细检测结果 - 
+                        <span id="modalFilename" class="fw-normal"></span>
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row g-4"> <!-- 新增栅格系统 -->
+                        <!-- 左侧表格 -->
+                        <div class="col-lg-6">
+                            <table class="table table-hover">
+                                <thead class="table-primary">
+                                    <tr>
+                                        <th>疾病类型</th>
+                                        <th>概率</th>
+                                        <th>严重程度</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="modalPredictions"></tbody>
+                            </table>
+                        </div>
+                        
+                        <!-- 右侧图表 -->
+                        <div class="col-lg-6">
+                            <div class="chart-container" style="position: relative; height: 400px;">
+                                <canvas id="detailChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="{{ url_for('static', filename='js/batch.js') }}"></script>

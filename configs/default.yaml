@@ -1,0 +1,48 @@
+model:
+  name: "efficientnet-b4"
+  num_classes: 8
+  pretrained: true
+  dropout_rate: 0.5
+
+training:
+  batch_size: 32
+  epochs: 100
+  lr: 0.0001
+  weight_decay: 0.0001
+  patience: 15
+  shceduler: "cosine"
+  mixed_precision: true
+
+data:
+  img_size: 380
+  batch_size: 32     
+  num_workers: 4
+  class_names : ['normal', 'diabetes', 'glaucoma', 'cataract', 'amd', 'hypertension', 'myopia', 'other']
+
+label_mapping:         
+  '0': 正常
+  '1': 糖尿病
+  '2': 青光眼
+  '3': 白内障
+  '4': AMD
+  '5': 高血压
+  '6': 近视
+  '7': 其他
+
+paths:
+  data_root: "data/raw"          # 原始图片根目录 
+  csv_path: "data/category.csv"    # 原始标注文件路径
+  split_dir: "data/processed"      # 划分结果保存目录
+  train_data: "data/processed/train.csv"
+  val_data: "data/processed/val.csv"
+  test_data: "data/processed/test.csv"
+
+splits:
+  train:0.9
+  val:0.0
+  test:0.1
+
+logger:
+  log_dir: "logs"
+  save_dir: "checkpoints"
+  log_interval: 10

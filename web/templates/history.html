@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>历史检测记录</title>
+    <link href="https://cdn.bootcdn.net/ajax/libs/twitter-bootstrap/5.1.3/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="https://cdn.bootcss.com/bootstrap/5.1.3/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/history.css') }}">
+    <script src="https://cdn.bootcdn.net/ajax/libs/echarts/5.4.0/echarts.min.js"></script>
+    <script src="https://cdn.bootcdn.net/ajax/libs/bootstrap/5.1.3/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.sheetjs.com/xlsx-0.20.0/package/dist/xlsx.full.min.js"></script>
+</head>
+<body>
+    <div class="container py-4">
+        <!-- 标题区域 -->
+        <div class="header">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h1 class="h4 mb-2"><i class="fas fa-history me-2"></i>历史检测记录</h1>
+                    <span class="text-white-50 small" id="recordCount">最近30天检测记录</span>
+                </div>
+                <div class="d-flex align-items-center">
+                    <div class="input-group me-3" style="width: 280px;">
+                        <span class="input-group-text bg-white">
+                            <i class="fas fa-search text-secondary"></i>
+                        </span>
+                        <input type="text" id="searchInput" class="form-control" 
+                               placeholder="模糊搜索文件名、检测结果...">
+                    </div>
+                    <div class="btn-group">
+                        <button id="exportExcel" class="btn btn-success btn-medical me-2">
+                            <i class="fas fa-file-excel me-2"></i>导出报告
+                        </button>
+                        <a href="{{ url_for('system') }}" class="btn btn-primary btn-medical">
+                            <i class="fas fa-chevron-left me-2"></i>单张检测
+                        </a>
+                        <a href="{{ url_for('batch') }}" class="btn btn-primary ms-2">
+                            <i class="fas fa-chevron-left me-2"></i> 批量检测
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 主要内容区域 -->
+        <div class="row g-4">
+            <!-- 数据表格 -->
+            <div class="col-lg-7">
+                <div class="table-container">
+                    <div class="table-scroll-wrapper">
+                        <table class="table table-hover align-middle">
+                            <thead>
+                                <tr>
+                                    <th style="width:35%">文件名</th>
+                                    <th style="width:25%">检测结果</th>
+                                    <th style="width:20%" class="sortable" data-sort="probability">概率
+                                        <span class="sort-arrow"></span>
+                                    </th>
+                                    <th style="width:20%" class="sortable" data-sort="severity">严重程度
+                                        <span class="sort-arrow"></span>
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody id="resultBody" class="border-top-0">
+                                <!-- 动态数据 -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 分析图表 -->
+            <div class="col-lg-5">
+                <div class="chart-container p-3">
+                    <h6 class="text-secondary mb-3"><i class="fas fa-chart-pie me-2"></i>疾病分布分析</h6>
+                    <div id="chart" style="height: 480px;"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 修改后的详细模态框结构 -->
+    <div class="modal fade" id="detailModal" tabindex="-1">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <div class="d-flex align-items-center">
+                        <div class="modal-icon d-flex align-items-center justify-content-center">
+                            <i class="fas fa-file-medical text-white fs-5"></i>
+                        </div>
+                        <h5 class="modal-title text-white ms-3">详细检测报告</h5>
+                    </div>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <!-- 新增文件名称显示 -->
+                    <div class="mb-4">
+                        <h6 class="text-secondary mb-3" id="modalFilename"></h6>
+                    </div>
+                    
+                    <!-- 新增图表容器 -->
+                    <div class="mb-4">
+                        <canvas id="detailChart"></canvas>
+                    </div>
+                    
+                    <!-- 新增详细预测表格 -->
+                    <h6 class="text-secondary mb-3">详细预测分析</h6>
+                    <div class="table-responsive">
+                        <table class="table table-borderless">
+                            <thead class="bg-light">
+                                <tr>
+                                    <th>疾病名称</th>
+                                    <th>概率分布</th>
+                                    <th>严重程度</th>
+                                </tr>
+                            </thead>
+                            <tbody id="modalPredictions">
+                                <!-- 动态生成预测数据 -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/history.js') }}"></script>
+</body>
+</html>
