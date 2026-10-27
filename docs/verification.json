@@ -1,0 +1,51 @@
+{
+  "python": "3.9.13",
+  "torch": "2.3.1+cpu",
+  "torchvision": "0.18.1+cpu",
+  "device": "cpu",
+  "checks": {
+    "app": {
+      "/": 200,
+      "/system": 200,
+      "/batch": 200,
+      "/history": 200,
+      "single_image": {
+        "status": 200,
+        "classes": 8,
+        "top_class": "近视"
+      },
+      "batch_images": 2,
+      "history": true,
+      "missing_image_status": 400,
+      "llm": "not invoked"
+    },
+    "app_api": {
+      "/": 200,
+      "/system": 200,
+      "/batch": 200,
+      "/history": 200,
+      "single_image": {
+        "status": 200,
+        "classes": 8,
+        "top_class": "近视"
+      },
+      "batch_images": 2,
+      "history": true,
+      "missing_image_status": 400,
+      "llm": "not invoked"
+    }
+  },
+  "verified_on": "2026-10-27",
+  "source_commit": "7a0fbcd14840222098887e314b9bfde5f578e3ba",
+  "weight_sha256": "8e539b37f096aac2706c18ce7215874a4afc79788bbccf7d97ff62c9a6a516ca",
+  "method": "Flask test client with real model weights and repository sample image; no external LLM requests",
+  "dependencies": {
+    "numpy": "1.26.4",
+    "Pillow": "10.2.0",
+    "PyYAML": "6.0.1",
+    "Flask": "3.1.3",
+    "urllib3": "2.2.1",
+    "requests": "2.31.0",
+    "ollama": "0.6.3"
+  }
+}
